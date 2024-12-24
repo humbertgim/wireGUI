@@ -2,24 +2,43 @@ const express = require('express');
 const fs = require('fs');
 const { exec } = require('child_process');
 const path = require('path');
-
+const cors = require('cors'); // Import cors middleware
 const app = express();
-const PORT = 3000;
+const PORT = 3001;
 
 // Middleware to parse JSON
 app.use(express.json());
+app.use(cors());
 
 // Path to WireGuard configuration directory
-const CONFIG_DIR = '/etc/wireguard';
+//const CONFIG_DIR = '/etc/wireguard';
+const CONFIG_DIR = 'c:\\projectes';
 
 // Endpoint to list WireGuard configurations
 app.get('/list-configs', (req, res) => {
-  exec(`ls ${CONFIG_DIR}/*.conf`, (error, stdout, stderr) => {
+  exec(`dir /b ${CONFIG_DIR}\\*.conf`, (error, stdout, stderr) => {
     if (error) {
       return res.status(500).json({ message: 'Error listing configurations', error: stderr });
     }
     const configs = stdout.split('\n').filter(Boolean).map(file => path.basename(file));
     res.json({ configs });
+  });
+});
+
+// Endpoint to get configuration content
+app.get('/get-config/:name', (req, res) => {
+  const configName = req.params.name;
+  const configPath = path.join(CONFIG_DIR, configName);
+
+  if (!fs.existsSync(configPath)) {
+    return res.status(404).json({ message: 'Configuration not found' });
+  }
+
+  fs.readFile(configPath, 'utf8', (err, data) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error reading configuration', error: err.message });
+    }
+    res.json({ content: data });
   });
 });
 

@@ -25,6 +25,23 @@ app.get('/list-configs', (req, res) => {
   });
 });
 
+// Endpoint to get configuration content
+app.get('/get-config/:name', (req, res) => {
+  const configName = req.params.name;
+  const configPath = path.join(CONFIG_DIR, configName);
+
+  if (!fs.existsSync(configPath)) {
+    return res.status(404).json({ message: 'Configuration not found' });
+  }
+
+  fs.readFile(configPath, 'utf8', (err, data) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error reading configuration', error: err.message });
+    }
+    res.json({ content: data });
+  });
+});
+
 // Endpoint to download a specific WireGuard configuration
 app.get('/download-config/:name', (req, res) => {
   const configName = req.params.name;

@@ -4,7 +4,7 @@ import {
   Box,
   Button,
   Container,
-  Grid,
+  Grid2,
   Paper,
   TextField,
   Typography,
